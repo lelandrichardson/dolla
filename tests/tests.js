@@ -1,8 +1,8 @@
-test( "Selecor, no Context", function () {
+test( "Selector, no Context", function () {
 	ok( $("div").length, "Elements Found" );
 });
 
-test( "Selector with String Context", function () {
+test( "Selector, String Context", function () {
 	ok( $("div", "#two-divs").length, "Elements Found Within Context" );
 });
 
