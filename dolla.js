@@ -23,11 +23,26 @@
             typeof HTMLElement === "object" ? o instanceof HTMLElement : //DOM2
                 o && typeof o === "object" && o.nodeType === 1 && typeof o.nodeName==="string"
             );
-    };
-    var isString = function(s){ return typeof s === 'string';},
+        },
+        isString = function(s){ return typeof s === 'string';},
         isFunction = function(f){ return typeof f === 'function';},
         isArray = Array.isArray, //use native version here
-        isDolla = function(d) {return d instanceof dolla;}
+        isDolla = function(d) {return d instanceof dolla;},
+
+        //takes two dolla instances, and copies over the elements from one into the other
+        joinDolla = function(a,b){
+            var startingLength = a.length,
+                addingLength = b.length;
+            // add the results to the items object
+            for (var i = 0; i < addingLength; i++) {
+                a[startingLength + i] = b[i];
+            }
+
+            a.length = startingLength + addingLength;
+            return a;
+        };
+
+
 
     // allows registration of multiple handlers without clobbering existing ones
     var registerEvent = function(el,event,callback){
@@ -36,8 +51,17 @@
 
     // PRIMARY CONSTRUCTOR
     var dolla = function(selector, context) {
+        if(!isDolla(this)){
+            //makes sure dolla is called with new operator...
+            return new dolla(selector,context);
+        }
+        var self = this, nodes;
+        if(selector === undefined){
 
-        var self = {}, nodes;
+            // have empty constructor return empty dolla
+            self.length = 0;
+            return this;
+        }
 
         if (isString(context)) {
             context = document.querySelector(context);
@@ -51,7 +75,11 @@
         }
 
         self.length = nodes.length;
+
     };
+
+    //empty dolla for utility
+    dolla.empty = function(){return dolla()};
 
     dolla.fn = dolla.prototype;
 
@@ -64,6 +92,28 @@
             callback.call( this[i], i, this[i] );
         }
         return this;
+    };
+
+    // Get the descendants of each element in the current set of matched elements, filtered by a selector
+    //TODO: add API for .dolla(dolla object) and .dolla(element)
+    dolla.fn.find = function(selector){
+        var i,
+            ret = dolla.empty(),
+            len = this.length;
+        if(len === 0){return ret;}
+        for ( i = 0; i < len; i++ ) {
+            joinDolla(ret,dolla( selector, this[ i ]));
+        }
+        return ret;
+    };
+
+    // get parent node of first element, wrapped in dolla object
+    dolla.fn.parent = function() {
+        if(this.length === 0){
+            return dolla.empty();
+        }
+        var parent = this[0].parentNode;
+        return parent && parent.nodeType !== 11 ? dolla(parent) : dolla.empty();
     };
 
 
@@ -102,15 +152,50 @@
 
     //register event handlers
     dolla.fn.on = function(event, callback) {
-        this.each(function(){
+        return this.each(function(){
             registerEvent(this, event, callback);
         });
-        return this;
     };
 
     //click event shorthand
     dolla.fn.click = function(callback) {
         return this.on('click',callback);
+    };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // GETTER: `.css("{styleProperty}")
+    dolla.fn.css = function(name, value){
+        if(this.length === 0){return null;}
+
+        return getStyle(this[0],name,value);
+    };
+
+    var getStyle = function(elem,name,value){
+        // Don't set styles on text and comment nodes
+        if ( !elem || elem.nodeType === 3 || elem.nodeType === 8 || !elem.style ) {
+            return;
+        }
+
+        if(value !== undefined){
+            // setting value
+            return;
+        } else {
+            // getting value
+            return elem.style[name];
+        }
     };
 
     //export constructors

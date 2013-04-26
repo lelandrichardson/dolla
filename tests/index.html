@@ -13,10 +13,67 @@
 				<div>First</div>
 				<div>Second</div>
 			</div>
+
+            <div id="style-tests">
+                <!-- All Tested styles applied -->
+                <p class="full"
+                   style="
+                        width: 10px;
+                        height: 10px;
+                        display: inline-block;
+
+
+                   "></p>
+
+                <!-- No styles applied-->
+                <p class="empty"></p>
+
+
+            </div>
+
+            <div id="find-tests">
+                <ul class="first">
+                    <li></li>
+                    <li></li>
+                    <li></li>
+                </ul>
+                <ul>
+                    <li></li>
+                    <li></li>
+                </ul>
+            </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 		</div>
+
+
+
+
+
+
+
+
+
 		<script src="http://code.jquery.com/qunit/qunit-1.11.0.js"></script>
-		<!--<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>-->
 		<script src="../dolla.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+        <script>
+            jQuery.noConflict();
+        </script>
 		<script src="tests.js"></script>
 	</body>
 </html>
