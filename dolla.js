@@ -6,17 +6,6 @@
     // useful native methods
     // ----------------------------------------------------
     var slice = Array.prototype.slice;
-
-    // utility functions
-    // ----------------------------------------------------
-    var nop = function() {};
-    var compose = function(a,b){
-        return function(){
-            var args = slice.call(arguments,0);
-            a.apply(this, args);
-            b.apply(this, args);
-        }.bind(this);
-    };
     // returns true if passed in object is a DOM element...
     var isElement = function(o) {
         return (
@@ -44,10 +33,40 @@
 
 
 
-    // allows registration of multiple handlers without clobbering existing ones
-    var registerEvent = function(el,event,callback){
-        el['on' + event] = compose.call(el, el['on' + event] || nop, callback );
-    };
+    // EVENT HANDLING
+    var isModel2 = document.addEventListener !== undefined,
+        isIELegacy = !isModel2 && document.attachEvent !== undefined;
+
+    function registerEvent(el,event,handler){
+        if(isModel2){
+            // DOM Level 2 API
+            el.addEventListener(event,handler,false);
+            return event;
+        } else if (isIELegacy) {
+            // IE Legacy Model
+            var bound = function(){
+                return handler.apply(el,arguments);
+            };
+            el.attachEvent('on' + event, bound);
+            return bound;
+        }
+    }
+
+    function detachEvent(el,event,handler){
+        if(isModel2){
+            // DOM Level 2 API
+            el.removeEventListener(event,handler,false);
+            return event;
+        } else if (isIELegacy) {
+            // IE Legacy Model
+            el.detachEvent('on' + event, handler);
+        }
+    }
+
+
+
+
+
 
     // PRIMARY CONSTRUCTOR
     var dolla = function(selector, context) {
@@ -151,9 +170,15 @@
     };
 
     //register event handlers
-    dolla.fn.on = function(event, callback) {
+    dolla.fn.on = function(event, handler) {
         return this.each(function(){
-            registerEvent(this, event, callback);
+            registerEvent(this, event, handler);
+        });
+    };
+
+    dolla.fn.off = function(event, handler) {
+        return this.each(function(){
+            detachEvent(this, event, handler);
         });
     };
 
