@@ -5,7 +5,12 @@
 
     // useful native methods
     // ----------------------------------------------------
-    var slice = Array.prototype.slice;
+    var slice = Array.prototype.slice,
+        forEach = function(array,callback){
+            var i, length = array.length;
+            for(i = 0; i < length; i++)
+                callback.call( array[i], i, array[i] );
+        };
     // returns true if passed in object is a DOM element...
     var isElement = function(o) {
         return (
@@ -35,7 +40,37 @@
 
     // EVENT HANDLING
     var isModel2 = document.addEventListener !== undefined,
-        isIELegacy = !isModel2 && document.attachEvent !== undefined;
+        isIELegacy = !isModel2 && document.attachEvent !== undefined,
+        handlerMapping = {},
+        guidKey = '__dolla_handler_guid',
+        nextGuid = 0,
+        newGuid = function(){
+            return nextGuid++;
+        };
+
+
+    function delegatedHandler(target, handler){
+        var interceptor = function(event){
+            var matching = dolla(target, this);
+            if(matching.length >0){
+                var parents = [];
+                var current = event.target;
+                while(current){
+                    parents.push(current);
+                    current = current.parentNode;
+                }
+                forEach(matching,function(){
+                   if(parents.indexOf(this) !== -1){
+                       return handler.call(this, event);
+                   }
+                });
+            }
+        };
+        var guid = newGuid();
+        handler[guidKey] = guid;
+        handlerMapping[guid] = interceptor;
+        return interceptor;
+    }
 
     function registerEvent(el,event,handler){
         if(isModel2){
@@ -82,11 +117,16 @@
             return this;
         }
 
-        if (isString(context)) {
-            context = document.querySelector(context);
-        }
+        if(isElement(selector)){
+            //element was passed in...  shortcut this case.
+            nodes = [selector];
+        } else {
+            if (isString(context)) {
+                context = document.querySelector(context);
+            }
 
-        nodes = slice.call((context || document).querySelectorAll(selector));
+            nodes = slice.call((context || document).querySelectorAll(selector));
+        }
 
         // add the results to the items object
         for (var i = 0; i < nodes.length; i++) {
@@ -107,9 +147,7 @@
     // Prototype Methods
     // -----------------------------------------
     dolla.fn.each = function (callback) {
-        for ( var i = 0; i < this.length; i++ ) {
-            callback.call( this[i], i, this[i] );
-        }
+        forEach(this, callback);
         return this;
     };
 
@@ -170,13 +208,22 @@
     };
 
     //register event handlers
-    dolla.fn.on = function(event, handler) {
+    dolla.fn.on = function(event, targetOrHandler, handlerOrUndefined) {
+        var isDelegated = !isFunction(targetOrHandler) && isFunction(handlerOrUndefined),
+            delegate = isDelegated ? delegatedHandler(targetOrHandler, handlerOrUndefined) : null;
         return this.each(function(){
-            registerEvent(this, event, handler);
+            isDelegated
+                ? registerEvent(this, event, delegate)
+                : registerEvent(this, event, targetOrHandler);
         });
     };
 
     dolla.fn.off = function(event, handler) {
+        var guid;
+        if((guid = handler[guidKey]) !== undefined){
+            handler = handlerMapping[guid] || handler;
+            delete handlerMapping[guid];
+        }
         return this.each(function(){
             detachEvent(this, event, handler);
         });

@@ -20,7 +20,7 @@ test( ".fn.style, Getter", function () {
         "height",
         "display",
         "border",
-        "margin",
+        "marginLeft",
         "marginTop",
         "marginBottom"
     ];

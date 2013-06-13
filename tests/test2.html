@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Dolla Unit Tests</title>
+	</head>
+	<body>
+
+        <div id="container">
+            <div>
+                <a class="link">Click me</a>
+                <a class="link">Click me</a>
+                <a class="link">Click me</a>
+                <a class="link">Click me</a>
+                <a class="link">Click me</a><a class="link">Click me</a>
+                <a class="link">Click me</a>
+
+            </div>
+        </div>
+        <div>
+            <a class="remove">Click me to remove</a>
+        </div>
+
+		<script src="../dolla.js"></script>
+        <script>
+            var clickHandler = function(){
+                console.log(this);
+                alert("hello!");
+            };
+            $("#container").on("click",clickHandler);
+            $(".remove").on("click",function(){
+                $("#container").off("click",clickHandler);
+            });
+        </script>
+	</body>
+</html>
