@@ -49,7 +49,7 @@
         xhr.open(method, url, true);
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4) {
-                var res = x.response.toString();
+                var res = xhr.response.toString();
                 // we can kinda safely assume this is json with this
                 if (res[0] === '{' || res[0] === '[') {
                     try {
