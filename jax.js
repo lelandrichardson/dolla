@@ -26,7 +26,12 @@
     * Don't shoot yourself in the foot by using multi-level objects.
     */
     function letsSerialize (args) {
+        // What if we got a null?
+        if (!args) {
+            return '';
+        }
         var ret = [];
+        
         for (key in args) {
             ret.push(encodeURIComponent(key) + '=' + encodeURIComponent(args[key]));
         }
@@ -39,7 +44,7 @@
     *
     * The magic happens!
     */
-    function callMeMaybe (url, cb, method, args) {
+    function callMeMaybe (url, cb, method, headers, args) {
         var xhr = letsMakeXhr();
         xhr.open(method, url, true);
         xhr.onreadystatechange = function () {
@@ -66,6 +71,10 @@
                 args = letsSerialize(args);
             }
         }
+        // we almost forgot them headers!
+        for (var i = 0; i < headers.length; ++i) {
+            xhr.setRequestHeader(headers[i][0], headers[i][1]);
+        }
         xhr.send(args);
         // useful when used as return value of an onclick function
         return false
@@ -73,17 +82,21 @@
 
 
     var jax = {
-        GET: function (url, cb) {
-            return callMeMaybe(url, cb, 'GET', null);
+        GET: function (url, headers, cb) {
+            if ('function' === typeof headers) cb = headers, headers = [];
+            return callMeMaybe(url, cb, 'GET', headers, null);
         },
-        DELETE: function (url, cb) {
-            return callMeMaybe(url, cb, 'DELETE', null);
+        DELETE: function (url, headers, cb) {
+            if ('function' === typeof headers) cb = headers, headers = [];
+            return callMeMaybe(url, cb, 'DELETE', headers, null);
         },
-        PUT: function (url, args, cb) {
-            return callMeMaybe(url, cb, 'PUT', args);
+        PUT: function (url, args, headers, cb) {
+            if ('function' === typeof headers) cb = headers, headers = [];
+            return callMeMaybe(url, cb, 'PUT', headers, args);
         },
-        POST: function (url, args, cb) {
-            return callMeMaybe(url, cb, 'POST', args);
+        POST: function (url, args, headers, cb) {
+            if ('function' === typeof headers) cb = headers, headers = [];
+            return callMeMaybe(url, cb, 'POST', headers, args);
         }
     };
 
