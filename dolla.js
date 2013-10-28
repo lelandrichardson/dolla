@@ -236,14 +236,31 @@
 
 
 
+	//	Submit event shorthand
+	dolla.fn.submit = function (callback) {
+		return this.on('submit', callback)
+	};
 
+	//	Add one or several classes
+	dolla.fn.addClass = function (classToAdd) {
+		//	Remove any .s before the class name, compact whitespace, split
+		classToAdd = classToAdd.replace(/^\.+|\s\.+/g, '').replace(/\s+/g, ' ').split(' ');
+		var i = this.length, j = classToAdd.length;
+		//	Hackish loop, slightly faster
+		while(i--)
+			while (j--)
+				this[i].classList.add(classToAdd[j]);
+	}
 
-
-
-
-
-
-
+	//	Remove one or several classes
+	dolla.fn.removeClass = function (classToRemove) {
+		classToRemove = classToRemove.replace(/\.+/g, '').replace(/\s+/g, ' ').split(' ');
+		var i = this.length, j = classToAdd.length;
+		while(i--)
+			while (j--)
+				this[i].classList = this[i].classList.remove(classToRemove[j])
+	};
+	
 
 
 
